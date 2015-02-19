@@ -7,6 +7,8 @@
 ;; 3. (start-figwheel)
 ;; 4. (browser-repl)
 ;;
+;; :cljs/quit to exit browser repl
+;;
 ;; Other info:
 ;;
 ;; Client side routing: https://github.com/gf3/secretary
@@ -23,6 +25,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [reagent "0.4.3"]
                  [reagent-utils "0.1.0"]
+                 [reagent-forms "0.2.6"]
                  [secretary "1.2.0"]
                  [org.clojure/clojurescript "0.0-2371" :scope "provided"]
                  [com.cemerick/piggieback "0.1.3"]
@@ -35,7 +38,7 @@
                  [environ "1.0.0"]
                  [leiningen "2.5.0"]
                  [figwheel "0.1.5-SNAPSHOT"]
-                 [prone "0.6.0"]]
+                 ]
 
   :plugins [
             [lein-cljsbuild "1.0.3"]
