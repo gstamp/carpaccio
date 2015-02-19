@@ -17,14 +17,20 @@
 
 ;; -------------------------
 ;; State
-(defonce app-state (atom {:orders [{:id 1 :date "2014-11-02" :items 1 :price 2 :state "TAS"}] }))
+(defonce app-state
+  (atom {
+         :orders [{:id 1 :date "2014-11-02" :items 1 :price 2 :state "TAS"}]
+         :last-order-id 1}))
 (defn get-state [k & [default]]
   (clojure.core/get @app-state k default))
 (defn put! [k v] (swap! app-state assoc k v))
 
 (defn add-order[order]
-  (put! :orders
-        (conj (get-state :orders) order)))
+  (let [order-id (inc (get-state :last-order-id))
+        order (assoc order :id order-id)]
+    (put! :last-order-id order-id)
+    (put! :orders
+          (conj (get-state :orders) order))))
 (defn delete-order[order]
   (put! :orders
         (remove #(= order %) (get-state :orders))))
