@@ -1,1 +1,1 @@
-web: lein with-profile production trampoline ring server
+web: java $JVM_OPTS -cp target/carpaccio.jar clojure.main -m carpaccio.server

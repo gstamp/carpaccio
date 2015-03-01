@@ -2,19 +2,15 @@
 ;;
 ;; Steps:
 ;;
-;; 1. lein ring server
-;; 2. M-x cider-jack-in
-;; 3. (start-figwheel)
-;; 4. (browser-repl)
-;;
-;; :cljs/quit to exit browser repl
+;; 1. lein figwheel
+;; 2. Browse to http://localhost:3449
 ;;
 ;; Other info:
 ;;
 ;; Client side routing: https://github.com/gf3/secretary
 ;;
 
-(defproject carpaccio2 "0.1.0-SNAPSHOT"
+(defproject carpaccio "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -23,34 +19,35 @@
   :source-paths ["src/clj" "src/cljs"]
 
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [reagent "0.4.3"]
-                 [reagent-utils "0.1.0"]
-                 [reagent-forms "0.2.6"]
-                 [secretary "1.2.0"]
-                 [org.clojure/clojurescript "0.0-2371" :scope "provided"]
-                 [com.cemerick/piggieback "0.1.3"]
-                 [weasel "0.4.0-SNAPSHOT"]
-                 [ring "1.3.1"]
-                 [ring/ring-defaults "0.1.2"]
-                 [prone "0.6.0"]
-                 [compojure "1.2.0"]
-                 [selmer "0.7.2"]
-                 [environ "1.0.0"]
-                 [leiningen "2.5.0"]
-                 [figwheel "0.1.5-SNAPSHOT"]
-                 ]
+                 [cljsjs/react "0.12.2-5"]
+                 [reagent "0.5.0-alpha3"]
+                 [reagent-forms "0.4.3"]
+                 [reagent-utils "0.1.2"]
+                 [secretary "1.2.1"]
+                 [org.clojure/clojurescript "0.0-2913" :scope "provided"]
+                 [ring "1.3.2"]
+                 [ring/ring-defaults "0.1.3"]
+                 [prone "0.8.0"]
+                 [compojure "1.3.2"]
+                 [selmer "0.8.0"]
+                 [environ "1.0.0"]]
 
   :plugins [
-            [lein-cljsbuild "1.0.3"]
+            [lein-cljsbuild "1.0.4"]
             [lein-environ "1.0.0"]
-            [lein-ring "0.8.13"]
-            [lein-asset-minifier "0.2.0"]]
+            [lein-ring "0.9.1"]
+            [lein-asset-minifier "0.2.2"]]
 
-  :ring {:handler carpaccio2.handler/app}
+  :ring {:handler carpaccio.handler/app
+         :uberwar-name "carpaccio.war"}
 
   :min-lein-version "2.5.0"
 
-  :uberjar-name "carpaccio2.jar"
+  :uberjar-name "carpaccio.jar"
+
+  :main carpaccio.server
+
+  :clean-targets ^{:protect false} ["resources/public/js"]
 
   :minify-assets
   {:assets
@@ -59,30 +56,40 @@
   :cljsbuild {:builds {:app {:source-paths ["src/cljs"]
                              :compiler {:output-to     "resources/public/js/app.js"
                                         :output-dir    "resources/public/js/out"
-                                        :source-map    "resources/public/js/out.js.map"
-                                        :externs       ["react/externs/react.js"]
+                                        ;;:externs       ["react/externs/react.js"]
+                                        :asset-path   "js/out"
                                         :optimizations :none
                                         :pretty-print  true}}}}
 
-  :profiles {:dev {:repl-options {:init-ns carpaccio2.handler
+  :profiles {:dev {:repl-options {:init-ns carpaccio.handler
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
                    :dependencies [[ring-mock "0.1.5"]
-                                  [ring/ring-devel "1.3.1"]
+                                  [ring/ring-devel "1.3.2"]
+                                  [leiningen "2.5.1"]
+                                  [figwheel "0.2.5-SNAPSHOT"]
+                                  [weasel "0.6.0-SNAPSHOT"]
+                                  [com.cemerick/piggieback "0.1.6-SNAPSHOT"]
                                   [pjstadig/humane-test-output "0.6.0"]]
 
-                   :plugins [[lein-figwheel "0.1.4-SNAPSHOT"]]
+                   :source-paths ["env/dev/clj"]
+                   :plugins [[lein-figwheel "0.2.3-SNAPSHOT"]]
 
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]
 
                    :figwheel {:http-server-root "public"
                               :server-port 3449
-                              :css-dirs ["resources/public/css"]}
+                              :css-dirs ["resources/public/css"]
+                              :ring-handler carpaccio.handler/app}
 
                    :env {:dev? true}
 
-                   :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]}}}}
+                   :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
+                                              :compiler {   :main "carpaccio.dev"
+                                                         :source-map true}}
+}
+}}
 
              :uberjar {:hooks [leiningen.cljsbuild minify-assets.plugin/hooks]
                        :env {:production true}
@@ -97,4 +104,6 @@
 
              :production {:ring {:open-browser? false
                                  :stacktraces?  false
-                                 :auto-reload?  false}}})
+                                 :auto-reload?  false}
+                          :cljsbuild {:builds {:app {:compiler {:main "carpaccio.prod"}}}}
+                          }})

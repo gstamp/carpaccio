@@ -1,5 +1,5 @@
-(ns carpaccio2.dev
-  (:require [carpaccio2.core :as core]
+(ns ^:figwheel-no-load carpaccio.dev
+  (:require [carpaccio.core :as core]
             [figwheel.client :as figwheel :include-macros true]
             [weasel.repl :as weasel]
             [reagent.core :as r]))

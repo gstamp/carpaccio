@@ -1,10 +1,12 @@
-(ns carpaccio2.core
+(ns carpaccio.core
     (:require [reagent.core :as reagent :refer [atom]]
+              [reagent.session :as session]
               [secretary.core :as secretary :include-macros true]
               [goog.events :as events]
               [goog.history.EventType :as EventType]
               [goog.string :as gstring]
-              [goog.string.format])
+              [goog.string.format]
+              [cljsjs.react :as react])
     (:import goog.History))
 
 ;; Set *print-fn* to console.log
@@ -148,7 +150,7 @@
        [:td]
        [:td (format "$%1.2f" (reduce + (map (comp js/parseFloat order-total) orders)))]])]])
 
-(defmethod page :page1 [_]
+(defn homepage []
   [:div.container
    [:div.page-header
     [:h1 "Shop"]
@@ -158,29 +160,19 @@
    [:hr]
    [order-form (get-state :orders)]])
 
-(defmethod page :default [_]
-  [:div "Invalid/Unknown route"])
-
-(defn main-page []
-  [:div [page (get-state :current-page)]])
+(defn current-page []
+  [:div [(session/get :current-page)]])
 
 ;; -------------------------
 ;; Routes
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
-  (put! :current-page :page1))
-
-(secretary/defroute "/page2" []
-  (put! :current-page :page2))
-
-;; -------------------------
-;; Initialize app
-(defn init! []
-  (reagent/render-component [main-page] (.getElementById js/document "app")))
+  (session/put! :current-page #'homepage))
 
 ;; -------------------------
 ;; History
+;; must be called after routes have been defined
 (defn hook-browser-navigation! []
   (doto (History.)
     (events/listen
@@ -188,5 +180,9 @@
      (fn [event]
        (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
-;; need to run this after routes have been defined
-(hook-browser-navigation!)
+
+;; -------------------------
+;; Initialize app
+(defn init! []
+  (hook-browser-navigation!)
+  (reagent/render-component [current-page] (.getElementById js/document "app")))
